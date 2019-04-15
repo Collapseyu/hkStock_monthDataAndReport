@@ -50,9 +50,9 @@ with open('wrongStock.csv', 'w', newline='') as f:
     for row in error_data:
         writer.writerow(row)
 """
-headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0','Cookie':'Hm_lpvt_1db88642e346389874251b5a1eded6e3=1554779921; Hm_lvt_1db88642e346389874251b5a1eded6e3=1553440045,1554779880; _ga=GA1.2.2103741969.1554779880; _gid=GA1.2.2101156218.1554779880; device_id=0b5ab0d0a69ecbe3c8e75994612c5a92; u=551554779882402; xq_a_token=6793401481303b0b4078c00acf521f116693ab76; xq_a_token.sig=kn3AtIz_AxxI0iAzWFBkTMIOFfQ; xq_r_token=e5e64b239ced9de9b2e1d1b37182159946e08cf0; xq_r_token.sig=Qc9zNevVZNNCDpgFt-leV4WiA0E; s=ex17chesrb'}
+headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:23.0) Gecko/20100101 Firefox/23.0','Cookie':'Hm_lpvt_1db88642e346389874251b5a1eded6e3=1555129389; Hm_lvt_1db88642e346389874251b5a1eded6e3=1554884514,1554952370,1554988383,1555127242; _ga=GA1.2.2103741969.1554779880; _gid=GA1.2.1978831027.1555127242; u=441555129383272; xq_a_token=c3ad928c32844dd1159fadf6b740202c98f57e08; xq_a_token.sig=gGiB0IGXSeuhdiVqcjKBnjxWBNE; xq_r_token=ad311bab2af18c96dcdf509d59414b94ef1f5d4a; xq_r_token.sig=ILfaBwMDJJsRbIEHItnGAJQP668; _gat=1; device_id=0b5ab0d0a69ecbe3c8e75994612c5a92; s=ex17chesrb'}
 x=[]
-data=[['股票代码','时间','收盘价','涨跌幅','换手率']]
+data=[['股票代码','时间','开盘价','最高价','最低价','收盘价','涨跌幅','换手率']]
 orderT=[]
 for i in range(1200):
     x.append(str(i+1).zfill(5))
@@ -67,7 +67,9 @@ rst_dict = json.loads(rst)
 print(len(rst_dict['data']['item']))
 """
 for i in range(1200):
-    url = 'https://stock.xueqiu.com/v5/stock/chart/kline.json?symbol='+x[i]+'&begin=1554866347598&period=quarter&type=before&count=-142&indicator=kline,pe,pb,ps,pcf,market_capital,agt,ggt,balance'
+    url='https://stock.xueqiu.com/v5/stock/chart/kline.json?symbol='+x[i]+'&begin=1555215798851&period=quarter&type=before&count=-142&indicator=kline,pe,pb,ps,pcf,market_capital,agt,ggt,balance'
+    #'https://stock.xueqiu.com/v5/stock/chart/kline.json?symbol='+x[i]+'&begin=1554866347598&period=quarter&type=before&count=-142&indicator=kline,pe,pb,ps,pcf,market_capital,agt,ggt,balance'
+    #'https://stock.xueqiu.com/v5/stock/chart/kline.json?symbol='+x[i]+'&begin=1555213673813&period=month&type=before&count=-142&indicator=kline,pe,pb,ps,pcf,market_capital,agt,ggt,balance'
     req = urllib.request.Request(url=url, headers=headers)
     order=x[i]
     content = urllib.request.urlopen(req).read()
@@ -76,25 +78,29 @@ for i in range(1200):
     rst_dict = json.loads(rst)
     if(rst_dict['data']!={}):
         length = len(rst_dict['data']['item'])
-        if(length>=18):
+        if(length>=18): #month 40
             for j in range(18):
                 timeStamp=rst_dict['data']['item'][length-j-1][0]
-                price=rst_dict['data']['item'][length-j-1][4]
+                priceFirst=rst_dict['data']['item'][length-j-1][2]
+                priceMax=rst_dict['data']['item'][length-j-1][3]
+                priceMin=rst_dict['data']['item'][length-j-1][4]
+                priceLast=rst_dict['data']['item'][length-j-1][5]
                 percent = rst_dict['data']['item'][length - j - 1][6]
                 change = rst_dict['data']['item'][length - j - 1][8]
                 n=timeStamp/1000
                 timeArray = time.localtime(n)
                 otherStyleTime = time.strftime("%Y-%m", timeArray)
-                data.append([order,otherStyleTime,price,percent,change])
+                data.append([order,otherStyleTime,priceFirst,priceMax,priceMin,priceLast,percent,change])
             orderT.append(order)
             print(order)
         #print(otherStyleTime)
-with open('stockFinancial.csv', 'w', newline='') as f:
+    time.sleep(0.5)
+with open('quarterstockFinancial.csv', 'w', newline='') as f:
     writer = csv.writer(f)
     for row in data:
         writer.writerow(row)
     f.close()
-with open('goodOrder.csv','w',newline='') as f:
+with open('quartergoodOrder.csv','w',newline='') as f:
     writer=csv.writer(f)
     for row in orderT:
         writer.writerow(row)
